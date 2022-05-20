@@ -1,68 +1,122 @@
 import hashlib
+import Cryptodome.Random
+import whirlpool
+from Cryptodome.Cipher import AES, DES
 
-import Crypto.Random
-from Crypto.Cipher import AES
 
+# AES requires a key with 128, 192, or 256 bits.
+# DES requires a key with 56 bits.
+# ECB does not take IV.
 
 class Encryption:
-    def AES_CDC(self, key: bytes, data: bytes):
-        iv = Crypto.Random.get_random_bytes(AES.block_size)
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        ciphertext = cipher.encrypt(data).hex().encode()
-        return ciphertext, iv
+    def AES_CBC(self, key: bytes, plaintext: bytes) -> tuple:
+        iv = Cryptodome.Random.get_random_bytes(AES.block_size)
+        cipher = AES.new(key=key, mode=AES.MODE_CBC, iv=iv)
+        ciphertext = cipher.encrypt(plaintext=plaintext)
+        return iv, ciphertext
 
-    def AES_EAX(self, key: bytes, data: bytes):
-        cipher = AES.new(key, AES.MODE_EAX)
+    def AES_CFB(self, key: bytes, plaintext: bytes) -> tuple:
+        iv = Cryptodome.Random.get_random_bytes(AES.block_size)
+        cipher = AES.new(key=key, mode=AES.MODE_CFB, iv=iv)
+        ciphertext = cipher.encrypt(plaintext=plaintext)
+        return iv, ciphertext
+
+    def AES_EAX(self, key: bytes, plaintext: bytes) -> tuple:
+        cipher = AES.new(key=key, mode=AES.MODE_EAX)
+        ciphertext, tag = cipher.encrypt_and_digest(plaintext=plaintext)
         nonce = cipher.nonce
-        ciphertext, tag = cipher.encrypt_and_digest(data)
-        print(ciphertext, nonce, tag)
-        ciphertext = ciphertext.hex().encode()
-        nonce = nonce.hex().encode()
-        tag = tag.hex().encode()
-        return ciphertext, nonce, tag
+        return ciphertext, tag, nonce
+
+    def AES_ECB(self, key: bytes, plaintext: bytes) -> bytes:
+        cipher = AES.new(key=key, mode=AES.MODE_ECB)
+        ciphertext = cipher.encrypt(plaintext=plaintext)
+        return ciphertext
+
+    def AES_GCM(self, key: bytes, plaintext: bytes) -> tuple:
+        cipher = AES.new(key=key, mode=AES.MODE_GCM)
+        ciphertext, tag = cipher.encrypt_and_digest(plaintext=plaintext)
+        nonce = cipher.nonce
+        return ciphertext, tag, nonce
+
+    def DES_ECB(self, key: bytes, plaintext: bytes) -> bytes:
+        cipher = DES.new(key=key, mode=DES.MODE_ECB)
+        ciphertext = cipher.encrypt(plaintext=plaintext)
+        return ciphertext
+
+    def DES_OFB(self, key: bytes, plaintext: bytes) -> tuple:
+        iv = Cryptodome.Random.get_random_bytes(DES.block_size)
+        cipher = DES.new(key=key, mode=DES.MODE_OFB, iv=iv)
+        ciphertext = cipher.encrypt(plaintext=plaintext)
+        return iv, ciphertext
 
 
 class Decryption:
-    def AES_CDC(self, key: bytes, data: bytes, iv: bytes):
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        ciphertext = cipher.decrypt(data)
-        return ciphertext
+    def AES_CBC(self, key: bytes, ciphertext: bytes, iv: bytes) -> bytes:
+        cipher = AES.new(key=key, mode=AES.MODE_CBC, iv=iv)
+        plaintext = cipher.decrypt(ciphertext)
+        return plaintext
 
-    def AES_EAX(self, key: bytes, nonce: bytes, data: bytes, tag: bytes = None):
-        cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
-        plaintext = cipher.decrypt(data)
+    def AES_CFB(self, key: bytes, ciphertext: bytes, iv: bytes) -> bytes:
+        cipher = AES.new(key=key, mode=AES.MODE_CFB, iv=iv)
+        plaintext = cipher.decrypt(ciphertext)
+        return plaintext
 
-        if tag:
-            try:
-                cipher.verify(tag)
-            except ValueError as e:
-                print(e)
+    def AES_EAX(self, key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes) -> bytes:
+        cipher = AES.new(key=key, mode=AES.MODE_EAX, nonce=nonce)
+        plaintext = cipher.decrypt_and_verify(ciphertext=ciphertext, received_mac_tag=tag)
 
+        try:
+            cipher.verify(tag)
+        except ValueError as e:
+            print(e)
+
+        return plaintext
+
+    def AES_ECB(self, key: bytes, ciphertext: bytes) -> bytes:
+        cipher = AES.new(key=key, mode=AES.MODE_ECB)
+        plaintext = cipher.decrypt(ciphertext)
+        return plaintext
+
+    def AES_GCM(self, key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes) -> bytes:
+        cipher = AES.new(key=key, mode=AES.MODE_GCM, nonce=nonce)
+        plaintext = cipher.decrypt_and_verify(ciphertext=ciphertext, received_mac_tag=tag)
+
+        try:
+            cipher.verify(tag)
+        except ValueError as e:
+            print(e)
+
+        return plaintext
+
+    def DES_ECB(self, key: bytes, ciphertext: bytes) -> bytes:
+        cipher = DES.new(key=key, mode=DES.MODE_ECB)
+        plaintext = cipher.decrypt(ciphertext)
+        return plaintext
+
+    def DES_OFB(self, key: bytes, ciphertext: bytes, iv: bytes) -> bytes:
+        cipher = DES.new(key=key, mode=DES.MODE_OFB, iv=iv)
+        plaintext = cipher.decrypt(ciphertext)
         return plaintext
 
 
 class Hashing:
-    def MD5(self, data: bytes):
-        return hashlib.md5(data).hexdigest().encode()
+    def MD5(self, plaintext: bytes):
+        return hashlib.md5(plaintext).hexdigest().encode()
 
-    def SHA1(self, data: bytes):
-        return hashlib.sha1(data).hexdigest().encode()
+    def SHA1(self, plaintext: bytes):
+        return hashlib.sha1(plaintext).hexdigest().encode()
 
-    def SHA224(self, data: bytes):
-        return hashlib.sha224(data).hexdigest().encode()
+    def SHA224(self, plaintext: bytes):
+        return hashlib.sha224(plaintext).hexdigest().encode()
 
-    def SHA256(self, data: bytes):
-        return hashlib.sha256(data).hexdigest().encode()
+    def SHA256(self, plaintext: bytes):
+        return hashlib.sha256(plaintext).hexdigest().encode()
 
-    def SHA384(self, data: bytes):
-        return hashlib.sha384(data).hexdigest().encode()
+    def SHA384(self, plaintext: bytes):
+        return hashlib.sha384(plaintext).hexdigest().encode()
 
-    def SHA512(self, data: bytes):
-        return hashlib.sha512(data).hexdigest().encode()
+    def SHA512(self, plaintext: bytes):
+        return hashlib.sha512(plaintext).hexdigest().encode()
 
-
-s = 'hello world 1234'
-encrypted, nonce, tag = Encryption().AES_EAX(key='0123456789abcdef'.encode(), data=s.encode())
-print(encrypted, nonce, tag)
-decrypted = Decryption().AES_EAX(key='0123456789abcdef'.encode(), data=encrypted, nonce=nonce, tag=tag)
-# print(decrypted)
+    def whirlpool(self, plaintext: bytes):
+        return whirlpool.new(plaintext).hexdigest()
