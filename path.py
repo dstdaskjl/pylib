@@ -24,41 +24,24 @@ def apply_to_all(func):
     return decorate
 
 
-@apply_to_all(handle_exception)
 class Path:
-    def copy_file(self, src: str, dst: str) -> None:
-        shutil.copyfile(src, dst)
-
-    def create(self, *args: str) -> None:
-        # File
-        if '.' in args[-1]:
-            open(self.join(*args), 'w')
-        # Directory
-        else:
-            os.mkdir(self.join(*args))
-
-    def delete(self, *args: str) -> None:
-        # File
-        if '.' in args[-1]:
-            os.remove(self.join(*args))
-        # Directory
-        else:
-            shutil.rmtree(self.join(*args))
-
-    def exists(self, *args: str) -> bool:
-        return os.path.exists(self.join(*args))
-
-    def home(self) -> str:
-        return str(pathlib.Path.home())
-
-    def is_empty(self, *args: str) -> bool:
-        return len(self.listdir(*args)) == 0
+    def basename(self, *args: str) -> str:
+        return os.path.basename(self.join(*args))
 
     def join(self, *args: str) -> str:
         return os.path.join(*args)
 
-    def list_dir(self, *args: str) -> list:
-        return os.listdir(self.join(*args))
+
+@apply_to_all(handle_exception)
+class File(Path):
+    def copy(self, src: str, dst: str) -> None:
+        shutil.copyfile(src, dst)
+
+    def create(self, *args: str) -> None:
+        open(self.join(*args), 'w')
+
+    def delete(self, *args: str) -> None:
+        os.remove(self.join(*args))
 
     def read_text(self, filepath: str) -> list:
         with open(filepath, 'r') as f:
@@ -86,3 +69,30 @@ class Path:
     def unzip(self, src: str, dst: str) -> None:
         with ZipFile(src, 'r') as z:
             z.extractall(dst)
+
+
+@apply_to_all(handle_exception)
+class Directory(Path):
+    def create(self, *args: str) -> None:
+        os.mkdir(self.join(*args))
+
+    def delete(self, *args: str) -> None:
+        shutil.rmtree(self.join(*args))
+
+    def exists(self, *args: str) -> bool:
+        return os.path.exists(self.join(*args))
+
+    def home(self) -> str:
+        return str(pathlib.Path.home())
+
+    def is_empty(self, *args: str) -> bool:
+        return len(self.listdir(*args)) == 0
+
+    def list_dir(self, *args: str) -> list:
+        return os.listdir(self.join(*args))
+
+    def zip(self, src: str, dst: str) -> None:
+        shutil.make_archive(base_name=dst, format='zip', root_dir=src)
+
+    def unzip(self, src: str, dst: str) -> None:
+        shutil.unpack_archive(filename=src, format='zip', extract_dir=dst)
