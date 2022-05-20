@@ -12,15 +12,6 @@ class Power:
         self.dev = self._get_device_by_selection(sel)
         self.ports = self._get_ports_by_string(port_str)
 
-    def off(self):
-        reqType = (0x01 << 5) | 0x03
-        bReq = 0x01
-        wVal = (1 << 3)
-        # wIdx = self.port
-
-        self._transfer(self.dev, reqType, bReq, wVal)
-
-
     def on(self):
         reqType = (0x01 << 5) | 0x03
         bReq = 0x03
@@ -29,12 +20,18 @@ class Power:
 
         self._transfer(self.dev, reqType, bReq, wVal)
 
+    def off(self):
+        reqType = (0x01 << 5) | 0x03
+        bReq = 0x01
+        wVal = (1 << 3)
+        # wIdx = self.port
+
+        self._transfer(self.dev, reqType, bReq, wVal)
 
     def cycle(self):
         self.off()
         time.sleep(3)
         self.on()
-
 
     def _get_device_by_selection(self, sel: str) -> usb.core.Device:
         if ':' in sel:
