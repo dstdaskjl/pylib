@@ -1,13 +1,11 @@
-import sys, inspect, psutil, os, pathlib, datetime
-
-log_dir = str(pathlib.Path.home()) + '/Documents/memory_profile/'
-if not os.path.isdir(log_dir):
-    os.mkdir(log_dir)
-filename = 'result.txt'
-log_dir = log_dir + filename
+import sys, inspect, psutil, datetime
+from path import *
 
 
+directory, file = Directory(), File()
+log_path = directory.join(directory.home(), '/Documents/memory_profile/result.txt')
 process = psutil.Process(os.getpid())
+
 
 def log_usage_diff(cls_name, func):
     def decorate(*args, **kwargs):
@@ -16,11 +14,11 @@ def log_usage_diff(cls_name, func):
         new_usage = format(process.memory_info().rss / (1024 ** 2), '.4f')
         if old_usage != new_usage:
             dt = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-2]
-            log = '[' + dt + '] ' +  str(old_usage) + ' -> ' + str(new_usage) + ' ' + cls_name + ' ' + func.__name__ + '\n'
-            with open(log_dir, 'a') as outfile:
-                outfile.write(log)
+            log = '[' + dt + '] ' + str(old_usage) + ' -> ' + str(new_usage) + ' ' + cls_name + ' ' + func.__name__ + '\n'
+            file.write_text(filepath=log_path, content=log, mode='a')
         return func_ret
     return decorate
+
 
 def apply_to_all():
     cls_members = inspect.getmembers(sys.modules[__name__], inspect.isclass)
