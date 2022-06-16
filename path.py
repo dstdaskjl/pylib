@@ -43,6 +43,9 @@ class File(Path):
     def delete(self, *args: str) -> None:
         os.remove(self.join(*args))
 
+    def exists(self, *args: str) -> bool:
+        return os.path.exists(self.join(*args))
+
     def read_text(self, filepath: str) -> list:
         with open(filepath, 'r') as f:
             contents = f.read().splitlines()
