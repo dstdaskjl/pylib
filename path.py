@@ -31,11 +31,14 @@ class Path:
     def join(self, *args: str) -> str:
         return os.path.join(*args)
 
+    def list_dir(self, *args: str) -> list:
+        return os.listdir(self.join(*args))
+
 
 @apply_to_all(handle_exception)
 class File(Path):
     def copy(self, src: str, dst: str) -> None:
-        shutil.copyfile(src, dst)
+        shutil.copy(src, dst)
 
     def create(self, *args: str) -> None:
         open(self.join(*args), 'w')
@@ -55,6 +58,9 @@ class File(Path):
         with open(path, 'r') as f:
             json_obj = json.load(f)
         return json_obj
+
+    def rename(self, src: str, dst: str) -> None:
+        os.rename(src=src, dst=dst)
 
     def write_text(self, filepath: str, content: str, mode='a') -> None:
         with open(filepath, mode=mode) as f:
@@ -76,6 +82,9 @@ class File(Path):
 
 @apply_to_all(handle_exception)
 class Directory(Path):
+    def copy(self, src: str, dst: str) -> None:
+        shutil.copytree(src, dst)
+
     def create(self, *args: str) -> None:
         os.mkdir(self.join(*args))
 
@@ -90,9 +99,6 @@ class Directory(Path):
 
     def is_empty(self, *args: str) -> bool:
         return len(self.listdir(*args)) == 0
-
-    def list_dir(self, *args: str) -> list:
-        return os.listdir(self.join(*args))
 
     def zip(self, src: str, dst: str) -> None:
         shutil.make_archive(base_name=dst, format='zip', root_dir=src)
