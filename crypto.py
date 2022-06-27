@@ -1,5 +1,6 @@
 import hashlib
 import Cryptodome.Random
+import traceback
 import whirlpool
 from Cryptodome.Cipher import AES, DES
 
@@ -67,8 +68,8 @@ class Decryption:
 
         try:
             cipher.verify(tag)
-        except ValueError as e:
-            print(e)
+        except ValueError:
+            print(traceback.format_exc())
 
         return plaintext
 
@@ -83,8 +84,8 @@ class Decryption:
 
         try:
             cipher.verify(tag)
-        except ValueError as e:
-            print(e)
+        except ValueError:
+            print(traceback.format_exc())
 
         return plaintext
 
