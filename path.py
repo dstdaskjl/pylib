@@ -62,6 +62,10 @@ class File(Path):
     def rename(self, src: str, dst: str) -> None:
         os.rename(src=src, dst=dst)
 
+    def write_binary(self, filepath: str, content: bytes, mode='wb') -> None:
+        with open(filepath, mode=mode) as f:
+            f.write(content)
+
     def write_text(self, filepath: str, content: str, mode='a') -> None:
         with open(filepath, mode=mode) as f:
             f.write(content)
