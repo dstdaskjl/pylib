@@ -22,8 +22,8 @@ class Image:
         image = Im.open(src).transpose(method=Im.FLIP_TOP_BOTTOM)
         image.save(dst)
 
-    def from_array(self, array: np.ndarray) -> Im.Image:
-        return Im.fromarray(array)
+    def from_array(self, array: np.ndarray, mode=None) -> Im.Image:
+        return Im.fromarray(array, mode)
 
     def get_colors(self, src: str) -> list:
         return Im.open(src).getcolors()
