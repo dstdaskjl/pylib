@@ -31,6 +31,15 @@ class Image:
     def get_pixel(self, src: str, coord: tuple) -> Union[int, tuple]:
         return Im.open(src).getpixel(xy=coord)
 
+    def make_square(self, src: str, dst:str, size=0, fill_color=(0, 0, 0)):
+        image = Im.open(src)
+        x, y = image.size
+        if not size:
+            size = max(x, y)
+        new_im = Im.new('RGB', (size, size), fill_color)
+        new_im.paste(image, (int((size - x) / 2), int((size - y) / 2)))
+        return new_im.save(dst)
+
     def resize(self, src: str, dst: str, size: tuple, resample=Im.ANTIALIAS) -> None:
         image = Im.open(src).resize(size=size, resample=resample)
         image.save(dst)
