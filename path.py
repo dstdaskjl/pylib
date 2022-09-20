@@ -104,6 +104,9 @@ class Directory(Path):
     def is_empty(self, *args: str) -> bool:
         return len(self.listdir(*args)) == 0
 
+    def rename(self, src: str, dst: str) -> None:
+        os.rename(src=src, dst=dst)
+
     def zip(self, src: str, dst: str) -> None:
         shutil.make_archive(base_name=dst, format='zip', root_dir=src)
 
