@@ -5,6 +5,13 @@ from typing import Union
 
 #  (0,0) starts from the top-left corner
 
+def brighten_dark_spots(filepath: str) -> np.ndarray:
+    image = Image.open(filepath)
+    h, s, v = image.convert('HSV').split()
+    new_v = v.point(lambda i: i + int(30 * (255 - i) / 255))
+    output = Image.merge(mode="HSV", bands=(h, s, new_v)).convert('RGB')
+    return np.asarray(output)
+
 #  https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes
 def convert(src: str, mode: str) -> Image.Image:
     return Image.open(src).convert(mode=mode)
