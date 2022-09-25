@@ -1,10 +1,12 @@
 import sys
+sys.path.append('../')
+
 import os
 import shutil
 import json
 import inspect
 import traceback
-import path
+from pylib.path import path
 from zipfile import ZipFile
 
 
