@@ -34,6 +34,9 @@ class Path:
     def list_dir(self, *args: str) -> list:
         return os.listdir(self.join(*args))
 
+    def split(self, path: str) -> list:
+        return os.path.normpath(path).split(os.sep)
+
 
 @apply_to_all(handle_exception)
 class File(Path):
@@ -66,14 +69,18 @@ class File(Path):
         with open(filepath, mode=mode) as f:
             f.write(content)
 
+    def write_json(self, filepath: str, data: dict, mode='a', indent=4) -> None:
+        json_obj = json.dumps(data, indent=indent)
+        with open(filepath, mode=mode) as f:
+            f.write(json_obj)
+
+    def write_nothing(self, filepath:str) -> None:
+        with open(filepath, 'w') as f:
+            pass
+
     def write_text(self, filepath: str, content: str, mode='a') -> None:
         with open(filepath, mode=mode) as f:
             f.write(content)
-
-    def write_json(self, path: str, data: dict, mode='a', indent=4) -> None:
-        json_obj = json.dumps(data, indent=indent)
-        with open(path, mode=mode) as f:
-            f.write(json_obj)
 
     def zip(self, src: str, dst: str) -> None:
         with ZipFile(dst, 'w') as z:
