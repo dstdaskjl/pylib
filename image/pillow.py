@@ -5,6 +5,7 @@ from typing import Union
 
 #  (0,0) starts from the top-left corner
 
+# https://stackoverflow.com/questions/72306585/brighten-only-dark-areas-of-image-in-python
 def brighten_dark_spots(filepath: str) -> np.ndarray:
     image = Image.open(filepath)
     h, s, v = image.convert('HSV').split()
