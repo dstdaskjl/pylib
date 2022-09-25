@@ -1,8 +1,7 @@
-import sys, inspect, psutil, datetime
-from path import *
+import sys, os, inspect, psutil, datetime
+from path import directory, file, path
 
 
-directory, file = Directory(), File()
 log_path = directory.join(directory.home(), '/Documents/memory_profile/result.txt')
 process = psutil.Process(os.getpid())
 
