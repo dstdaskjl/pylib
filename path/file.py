@@ -1,5 +1,5 @@
-import sys
-sys.path.append('../')
+import sys, os
+sys.path.append(os.path.expanduser('~') + '/Documents/Github/')
 
 import os
 import shutil
