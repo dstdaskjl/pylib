@@ -1,17 +1,23 @@
 import numpy as np
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageFilter
 from typing import Union
 
 
 #  (0,0) starts from the top-left corner
 
 # https://stackoverflow.com/questions/72306585/brighten-only-dark-areas-of-image-in-python
-def brighten_dark_spots(filepath: str) -> np.ndarray:
+def brighten_dark_spots(filepath: str) -> Image.Image:
     image = Image.open(filepath)
     h, s, v = image.convert('HSV').split()
     new_v = v.point(lambda i: i + int(30 * (255 - i) / 255))
-    output = Image.merge(mode="HSV", bands=(h, s, new_v)).convert('RGB')
-    return np.asarray(output)
+    image = Image.merge(mode="HSV", bands=(h, s, new_v)).convert('RGB')
+    return image
+
+def contrast(src: str, factor: float) -> Image.Image:
+    image = Image.open(src)
+    enhancer = ImageEnhance.Contrast(image)
+    image = enhancer.enhance(factor=factor)
+    return image
 
 #  https://pillow.readthedocs.io/en/stable/handbook/concepts.html#concept-modes
 def convert(src: str, mode: str) -> Image.Image:
@@ -19,6 +25,9 @@ def convert(src: str, mode: str) -> Image.Image:
 
 def crop(src: str, top_left: tuple, bottom_right: tuple) -> Image.Image:
     return Image.open(src).crop(*top_left, *bottom_right)
+
+def find_edge(src: str) -> Image.Image:
+    return Image.open(src).convert('L').filter(ImageFilter.FIND_EDGES)
 
 def flip_left_right(src: str) -> Image.Image:
     return Image.open(src).transpose(method=Image.FLIP_LEFT_RIGHT)
@@ -58,6 +67,11 @@ def resize(src: str, size: tuple, resample=Image.ANTIALIAS) -> Image.Image:
 
 def rotate(src: str, angle: float, resample=Image.ANTIALIAS, center=None) -> Image.Image:
     return Image.open(src).rotate(angle=angle, resample=resample, center=center)
+
+def sharpen(src: str) -> Image.Image:
+    image = Image.open(src)
+    sharpened = image.filter(ImageFilter.SHARPEN)
+    return sharpened
 
 # https://stackoverflow.com/questions/14415741/what-is-the-difference-between-np-array-and-np-asarray
 # np.array always copies an object
