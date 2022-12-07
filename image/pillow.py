@@ -13,7 +13,7 @@ def brighten(image: Image.Image, factor: float) -> Image.Image:
 # https://stackoverflow.com/questions/72306585/brighten-only-dark-areas-of-image-in-python
 def brighten_dark_spots(image: Image.Image) -> Image.Image:
     h, s, v = image.convert('HSV').split()
-    new_v = v.point(lambda i: i + int(30 * (255 - i) / 255))
+    new_v = v.point(lambda i: i + int(20 * (255 - i) / 255))
     image = Image.merge(mode="HSV", bands=(h, s, new_v)).convert('RGB')
     return image
 
